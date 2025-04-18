@@ -19,7 +19,8 @@
 #ifndef __PGTBL_H__
 #   define __PGTBL_H__
 
-
+#include <net/gso.h>
+#include <linux/inetdevice.h>
 #include <linux/highmem.h>
 
 #include "compat_pgtable.h"
@@ -58,49 +59,49 @@ PgtblVa2MPNLocked(struct mm_struct *mm, // IN: Mm structure of a process
    if (pgd_present(*pgd) == 0) {
       return INVALID_MPN;
    }
-   if (pgd_large(*pgd)) {
-      /* Linux kernel does not support PGD huge pages. */
-      /* return pgd_pfn(*pgd) + ((addr & PGD_MASK) >> PAGE_SHIFT); */
-      return INVALID_MPN;
-   }
+   //if (pgd_large(*pgd)) {
+   //   /* Linux kernel does not support PGD huge pages. */
+   //   /* return pgd_pfn(*pgd) + ((addr & PGD_MASK) >> PAGE_SHIFT); */
+   //   return INVALID_MPN;
+   //}
 
    p4d = compat_p4d_offset(pgd, addr);
    if (compat_p4d_present(*p4d) == 0) {
       return INVALID_MPN;
    }
-   if (compat_p4d_large(*p4d)) {
-      mpn = compat_p4d_pfn(*p4d) + ((addr & ~COMPAT_P4D_MASK) >> PAGE_SHIFT);
-   } else {
+   //if (compat_p4d_large(*p4d)) {
+   //   mpn = compat_p4d_pfn(*p4d) + ((addr & ~COMPAT_P4D_MASK) >> PAGE_SHIFT);
+   //} else {
       pud_t *pud;
 
       pud = pud_offset(p4d, addr);
       if (pud_present(*pud) == 0) {
          return INVALID_MPN;
       }
-      if (pud_large(*pud)) {
-         mpn = pud_pfn(*pud) + ((addr & ~PUD_MASK) >> PAGE_SHIFT);
-      } else {
+      //if (pud_large(*pud)) {
+      //   mpn = pud_pfn(*pud) + ((addr & ~PUD_MASK) >> PAGE_SHIFT);
+      //} else {
          pmd_t *pmd;
 
          pmd = pmd_offset(pud, addr);
          if (pmd_present(*pmd) == 0) {
             return INVALID_MPN;
          }
-         if (pmd_large(*pmd)) {
-            mpn = pmd_pfn(*pmd) + ((addr & ~PMD_MASK) >> PAGE_SHIFT);
-         } else {
+         //if (pmd_large(*pmd)) {
+         //   mpn = pmd_pfn(*pmd) + ((addr & ~PMD_MASK) >> PAGE_SHIFT);
+         //} else {
             pte_t *pte;
 
-            pte = pte_offset_map(pmd, addr);
+            pte = pte_offset_kernel(pmd, addr);
             if (pte_present(*pte) == 0) {
                pte_unmap(pte);
                return INVALID_MPN;
             }
             mpn = pte_pfn(*pte);
             pte_unmap(pte);
-         }
-      }
-   }
+         //}
+      //}
+   //}
    if (mpn >= INVALID_MPN) {
       mpn = INVALID_MPN;
    }

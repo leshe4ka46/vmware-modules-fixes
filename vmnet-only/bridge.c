@@ -27,6 +27,8 @@
 #include <linux/poll.h>
 
 #include <linux/netdevice.h>
+#include <net/gso.h>
+#include <linux/inetdevice.h>
 #include <linux/etherdevice.h>
 #include <linux/mm.h>
 #include "compat_skbuff.h"
